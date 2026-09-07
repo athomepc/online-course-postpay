@@ -317,19 +317,85 @@
       }
     }
 
-    document
-      .getElementById("applicationForm")
-      .addEventListener(
-        "submit",
-        function(event) {
-          event.preventDefault();
+    const BACKEND_URL =
+  "https://script.google.com/macros/s/AKfycbyNDO0LqunUtRDyzpOEbt7t583Rtwa--oKb2yLMVI7WXhcNgrrLI80uJiPO89y7QOE/exec";
 
-          alert(
-            "ここまで正常です。\n" +
-            "次の工程で申込内容をGoogleスプレッドシートへ送信します。"
-          );
-        }
-      );
+document
+  .getElementById("applicationForm")
+  .addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const submitButton =
+        document.getElementById("submitButton");
+
+      submitButton.disabled = true;
+      submitButton.textContent = "送信中…";
+
+      try {
+
+        const formData =
+          new URLSearchParams();
+
+        formData.append(
+          "courseId",
+          courseId
+        );
+
+        formData.append(
+          "name",
+          document.getElementById("name").value.trim()
+        );
+
+        formData.append(
+          "email",
+          document.getElementById("email").value.trim()
+        );
+
+        formData.append(
+          "phone",
+          document.getElementById("phone").value.trim()
+        );
+
+        formData.append(
+          "lineIdToken",
+          lineIdToken
+        );
+
+        await fetch(
+          BACKEND_URL,
+          {
+            method: "POST",
+            mode: "no-cors",
+            body: formData
+          }
+        );
+
+        alert(
+          "お申し込みを送信しました。\n" +
+          "受付内容を確認しています。"
+        );
+
+        submitButton.textContent =
+          "送信しました";
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "送信できませんでした。\n" +
+          "もう一度お試しください。"
+        );
+
+        submitButton.disabled = false;
+        submitButton.textContent =
+          "申し込む";
+      }
+    }
+  );
 
     initializeLiff();
   </script>
