@@ -364,14 +364,48 @@ document
           lineIdToken
         );
 
-        await fetch(
-          BACKEND_URL,
-          {
-            method: "POST",
-            mode: "no-cors",
-            body: formData
-          }
-        );
+        const iframe =
+  document.createElement("iframe");
+
+iframe.name = "hiddenSubmitFrame";
+iframe.style.display = "none";
+
+document.body.appendChild(iframe);
+
+
+const postForm =
+  document.createElement("form");
+
+postForm.method = "POST";
+postForm.action = BACKEND_URL;
+postForm.target = "hiddenSubmitFrame";
+postForm.style.display = "none";
+
+
+for (const [key, value] of formData.entries()) {
+
+  const input =
+    document.createElement("input");
+
+  input.type = "hidden";
+  input.name = key;
+  input.value = value;
+
+  postForm.appendChild(input);
+}
+
+
+document.body.appendChild(postForm);
+
+postForm.submit();
+
+
+setTimeout(function() {
+
+  postForm.remove();
+  iframe.remove();
+
+}, 5000);
 
         alert(
           "お申し込みを送信しました。\n" +
