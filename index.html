@@ -6,6 +6,11 @@
 
   <title>オンライン講座 お申し込み</title>
 
+  <script
+    charset="utf-8"
+    src="https://static.line-scdn.net/liff/edge/2/sdk.js">
+  </script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -50,6 +55,16 @@
       text-align: center;
       font-size: 16px;
       line-height: 1.7;
+    }
+
+    .status {
+      background: #fff7df;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 18px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .course-box {
@@ -111,6 +126,11 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .note {
       margin-top: 18px;
       text-align: center;
@@ -132,10 +152,14 @@
         必要事項をご入力ください。
       </p>
 
+      <div class="status" id="status">
+        LINE情報を読み込んでいます…
+      </div>
+
       <div class="course-box">
         <div class="course-label">お申し込み講座</div>
         <div class="course-name" id="courseName">
-          選択した講座
+          講座情報を確認中です
         </div>
       </div>
 
@@ -145,6 +169,7 @@
           お名前
           <span class="required">必須</span>
         </label>
+
         <input
           type="text"
           id="name"
@@ -157,6 +182,7 @@
           メールアドレス
           <span class="required">必須</span>
         </label>
+
         <input
           type="email"
           id="email"
@@ -169,6 +195,7 @@
           電話番号
           <span class="required">必須</span>
         </label>
+
         <input
           type="tel"
           id="phone"
@@ -177,7 +204,10 @@
           required
         >
 
-        <button type="submit">
+        <button
+          type="submit"
+          id="submitButton"
+          disabled>
           申し込む
         </button>
 
@@ -191,15 +221,117 @@
   </div>
 
   <script>
+    const LIFF_ID = "2009804816-86czIDFV";
+
+    let lineIdToken = "";
+    let courseId = "";
+
+    const courseNames = {
+      SP202609: "スマホ勉強会",
+      PC202609: "パソコン勉強会",
+      SALON202609: "オンラインパソコン＆スマホサロン"
+    };
+
+    function getCourseId() {
+      const urlParams =
+        new URLSearchParams(window.location.search);
+
+      let id = urlParams.get("course");
+
+      if (!id) {
+        const liffState =
+          urlParams.get("liff.state");
+
+        if (liffState) {
+          const decoded =
+            decodeURIComponent(liffState);
+
+          const stateParams =
+            new URLSearchParams(
+              decoded.startsWith("?")
+                ? decoded.substring(1)
+                : decoded
+            );
+
+          id = stateParams.get("course");
+        }
+      }
+
+      return id || "";
+    }
+
+    async function initializeLiff() {
+      const status =
+        document.getElementById("status");
+
+      const submitButton =
+        document.getElementById("submitButton");
+
+      try {
+        await liff.init({
+          liffId: LIFF_ID
+        });
+
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        lineIdToken =
+          liff.getIDToken() || "";
+
+        courseId =
+          getCourseId();
+
+        const courseName =
+          courseNames[courseId];
+
+        if (courseName) {
+          document.getElementById(
+            "courseName"
+          ).textContent = courseName;
+        } else {
+          document.getElementById(
+            "courseName"
+          ).textContent =
+            "講座を確認できませんでした";
+        }
+
+        if (!lineIdToken) {
+          throw new Error(
+            "LINE情報を取得できませんでした。"
+          );
+        }
+
+        status.textContent =
+          "LINEとの接続が完了しました。";
+
+        submitButton.disabled =
+          !courseName;
+
+      } catch (error) {
+        console.error(error);
+
+        status.textContent =
+          "LINEとの接続中にエラーが発生しました。";
+      }
+    }
+
     document
       .getElementById("applicationForm")
-      .addEventListener("submit", function(event) {
-        event.preventDefault();
+      .addEventListener(
+        "submit",
+        function(event) {
+          event.preventDefault();
 
-        alert(
-          "現在は表示確認用です。\n次の工程でLINEと接続します。"
-        );
-      });
+          alert(
+            "ここまで正常です。\n" +
+            "次の工程で申込内容をGoogleスプレッドシートへ送信します。"
+          );
+        }
+      );
+
+    initializeLiff();
   </script>
 
 </body>
