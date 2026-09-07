@@ -37,7 +37,7 @@
     }
 
     .card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 18px;
       padding: 28px 22px;
       box-shadow: 0 4px 18px rgba(0,0,0,0.08);
@@ -83,7 +83,6 @@
     .course-name {
       font-size: 20px;
       font-weight: bold;
-      color: #444;
     }
 
     label {
@@ -108,11 +107,6 @@
       background: #fff;
     }
 
-    input:focus {
-      outline: 2px solid #efb2ca;
-      border-color: #efb2ca;
-    }
-
     button {
       width: 100%;
       margin-top: 28px;
@@ -123,12 +117,10 @@
       color: #fff;
       font-size: 18px;
       font-weight: bold;
-      cursor: pointer;
     }
 
     button:disabled {
       opacity: 0.5;
-      cursor: not-allowed;
     }
 
     .note {
@@ -163,7 +155,23 @@
         </div>
       </div>
 
-      <form id="applicationForm">
+      <form
+        id="applicationForm"
+        method="POST"
+        action="https://script.google.com/macros/s/AKfycbyNDO0LqunUtRDyzpOEbt7t583Rtwa--oKb2yLMVI7WXhcNgrrLI80uJiPO89y7QOE/exec"
+      >
+
+        <input
+          type="hidden"
+          id="courseIdInput"
+          name="courseId"
+        >
+
+        <input
+          type="hidden"
+          id="lineIdTokenInput"
+          name="lineIdToken"
+        >
 
         <label for="name">
           お名前
@@ -207,7 +215,8 @@
         <button
           type="submit"
           id="submitButton"
-          disabled>
+          disabled
+        >
           申し込む
         </button>
 
@@ -221,7 +230,8 @@
   </div>
 
   <script>
-    const LIFF_ID = "2009804816-86czIDFV";
+    const LIFF_ID =
+      "2009804816-86czIDFV";
 
     let lineIdToken = "";
     let courseId = "";
@@ -233,18 +243,22 @@
     };
 
     function getCourseId() {
-      const urlParams =
+
+      const params =
         new URLSearchParams(window.location.search);
 
-      let id = urlParams.get("course");
+      let id =
+        params.get("course");
 
       if (!id) {
-        const liffState =
-          urlParams.get("liff.state");
 
-        if (liffState) {
+        const state =
+          params.get("liff.state");
+
+        if (state) {
+
           const decoded =
-            decodeURIComponent(liffState);
+            decodeURIComponent(state);
 
           const stateParams =
             new URLSearchParams(
@@ -253,14 +267,17 @@
                 : decoded
             );
 
-          id = stateParams.get("course");
+          id =
+            stateParams.get("course");
         }
       }
 
       return id || "";
     }
 
+
     async function initializeLiff() {
+
       const status =
         document.getElementById("status");
 
@@ -268,6 +285,7 @@
         document.getElementById("submitButton");
 
       try {
+
         await liff.init({
           liffId: LIFF_ID
         });
@@ -286,15 +304,17 @@
         const courseName =
           courseNames[courseId];
 
-        if (courseName) {
-          document.getElementById(
-            "courseName"
-          ).textContent = courseName;
-        } else {
+        if (!courseName) {
+
           document.getElementById(
             "courseName"
           ).textContent =
             "講座を確認できませんでした";
+
+          status.textContent =
+            "講座情報を確認できませんでした。";
+
+          return;
         }
 
         if (!lineIdToken) {
@@ -303,13 +323,29 @@
           );
         }
 
+        document.getElementById(
+          "courseName"
+        ).textContent =
+          courseName;
+
+        document.getElementById(
+          "courseIdInput"
+        ).value =
+          courseId;
+
+        document.getElementById(
+          "lineIdTokenInput"
+        ).value =
+          lineIdToken;
+
         status.textContent =
           "LINEとの接続が完了しました。";
 
         submitButton.disabled =
-          !courseName;
+          false;
 
       } catch (error) {
+
         console.error(error);
 
         status.textContent =
@@ -317,122 +353,43 @@
       }
     }
 
-    const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbyNDO0LqunUtRDyzpOEbt7t583Rtwa--oKb2yLMVI7WXhcNgrrLI80uJiPO89y7QOE/exec";
 
-document
-  .getElementById("applicationForm")
-  .addEventListener(
-    "submit",
-    async function(event) {
+    document
+      .getElementById("applicationForm")
+      .addEventListener(
+        "submit",
+        function() {
 
-      event.preventDefault();
+          document.getElementById(
+            "courseIdInput"
+          ).value =
+            courseId;
 
-      const submitButton =
-        document.getElementById("submitButton");
+          document.getElementById(
+            "lineIdTokenInput"
+          ).value =
+            lineIdToken;
 
-      submitButton.disabled = true;
-      submitButton.textContent = "送信中…";
+          const button =
+            document.getElementById(
+              "submitButton"
+            );
 
-      try {
+          button.disabled = true;
+          button.textContent =
+            "送信中…";
 
-        const formData =
-          new URLSearchParams();
+          /*
+            preventDefault() は使いません。
+            そのままApps Scriptへ通常POSTします。
+          */
+        }
+      );
 
-        formData.append(
-          "courseId",
-          courseId
-        );
-
-        formData.append(
-          "name",
-          document.getElementById("name").value.trim()
-        );
-
-        formData.append(
-          "email",
-          document.getElementById("email").value.trim()
-        );
-
-        formData.append(
-          "phone",
-          document.getElementById("phone").value.trim()
-        );
-
-        formData.append(
-          "lineIdToken",
-          lineIdToken
-        );
-
-        const iframe =
-  document.createElement("iframe");
-
-iframe.name = "hiddenSubmitFrame";
-iframe.style.display = "none";
-
-document.body.appendChild(iframe);
-
-
-const postForm =
-  document.createElement("form");
-
-postForm.method = "POST";
-postForm.action = BACKEND_URL;
-postForm.target = "hiddenSubmitFrame";
-postForm.style.display = "none";
-
-
-for (const [key, value] of formData.entries()) {
-
-  const input =
-    document.createElement("input");
-
-  input.type = "hidden";
-  input.name = key;
-  input.value = value;
-
-  postForm.appendChild(input);
-}
-
-
-document.body.appendChild(postForm);
-
-postForm.submit();
-
-
-setTimeout(function() {
-
-  postForm.remove();
-  iframe.remove();
-
-}, 5000);
-
-        alert(
-          "お申し込みを送信しました。\n" +
-          "受付内容を確認しています。"
-        );
-
-        submitButton.textContent =
-          "送信しました";
-
-      } catch (error) {
-
-        console.error(error);
-
-        alert(
-          "送信できませんでした。\n" +
-          "もう一度お試しください。"
-        );
-
-        submitButton.disabled = false;
-        submitButton.textContent =
-          "申し込む";
-      }
-    }
-  );
 
     initializeLiff();
   </script>
 
 </body>
 </html>
+
