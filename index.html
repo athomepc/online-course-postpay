@@ -211,7 +211,21 @@
           autocomplete="tel"
           required
         >
+<!-- スマホ勉強会のみ表示：スマホの種類 -->
+<div id="phoneTypeArea" style="display:none;">
 
+  <label for="phoneType">
+    お使いのスマートフォン
+    <span class="required">必須</span>
+  </label>
+
+  <select id="phoneType" name="phoneType">
+    <option value="">選択してください</option>
+    <option value="Android">Android</option>
+    <option value="iPhone">iPhone</option>
+  </select>
+
+</div>
         <button
           type="submit"
           id="submitButton"
@@ -327,6 +341,18 @@
           "courseName"
         ).textContent =
           courseName;
+        // スマホ勉強会の場合だけスマホ種類を表示
+const phoneTypeArea = document.getElementById("phoneTypeArea");
+const phoneType = document.getElementById("phoneType");
+
+if (courseId === "SP202609") {
+  phoneTypeArea.style.display = "block";
+  phoneType.required = true;
+} else {
+  phoneTypeArea.style.display = "none";
+  phoneType.required = false;
+  phoneType.value = "";
+}
 
         document.getElementById(
           "courseIdInput"
