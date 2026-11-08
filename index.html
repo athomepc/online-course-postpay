@@ -270,7 +270,8 @@
   <script>
     const LIFF_ID =
       "2009804816-86czIDFV";
-
+  const COURSE_API_URL =
+  "https://script.google.com/macros/s/AKfycbygpJDldNR0TU07Jq8-rNe8i30MyMizQyv3Cmt8CwlusqkRlLQQoGLga--W43j-C3EE/exec";
     let lineIdToken = "";
     let courseId = "";
 
@@ -365,8 +366,33 @@
           "courseName"
         ).textContent =
           courseName;
-        document.getElementById("courseDateTime").textContent =
-  "開催日時を取得する準備ができました";
+       document.getElementById("courseDateTime").textContent =
+  "開催日時を読み込み中です…";
+        const courseApiUrl = new URL(COURSE_API_URL);
+courseApiUrl.searchParams.set("action", "courseInfo");
+courseApiUrl.searchParams.set("course", courseId);
+
+fetch(courseApiUrl.toString())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("講座情報を取得できませんでした");
+    }
+    return response.json();
+  })
+  .then(course => {
+    if (!course || !course.date) {
+      throw new Error("開催日時が見つかりません");
+    }
+
+    document.getElementById("courseDateTime").textContent =
+      `${course.date} ${course.start}〜${course.end}`;
+  })
+  .catch(error => {
+    console.error("講座情報取得エラー:", error);
+
+    document.getElementById("courseDateTime").textContent =
+      "開催日時を取得できませんでした";
+  });
         // スマホ勉強会の場合だけスマホ種類を表示
 const phoneTypeArea = document.getElementById("phoneTypeArea");
 const phoneType = document.getElementById("phoneType");
