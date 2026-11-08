@@ -164,6 +164,9 @@
         <div class="course-name" id="courseName">
           講座情報を確認中です
         </div>
+        <div id="courseDateTime" style="margin-top: 8px; font-size: 14px;">
+          開催日時を確認中です
+        </div>
       </div>
 
       <form
@@ -237,6 +240,16 @@
   </select>
 
 </div>
+ <label for="paymentMethod">
+  お支払い方法
+  <span class="required">必須</span>
+</label>
+
+<select id="paymentMethod" name="paymentMethod" required>
+  <option value="">選択してください</option>
+  <option value="Stripe">クレジットカード・PayPay</option>
+  <option value="銀行振込">銀行振込</option>
+</select>
         <button
           type="submit"
           id="submitButton"
