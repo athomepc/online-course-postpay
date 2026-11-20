@@ -251,6 +251,21 @@
   </select>
 
 </div>
+
+<!-- スマホ・パソコン勉強会のお申込み内容 -->
+<div id="applicationTypeArea" style="display:none;">
+  <label for="applicationType">
+    お申込み内容
+    <span class="required">必須</span>
+  </label>
+
+  <select id="applicationType" name="applicationType">
+    <option value="">選択してください</option>
+    <option value="参加">講座に参加する（1,000円）</option>
+    <option value="テキストのみ">テキストのみ購入する（500円）</option>
+  </select>
+</div>
+
  <label for="paymentMethod">
   お支払い方法
   <span class="required">必須</span>
@@ -416,6 +431,19 @@ if (courseId === "SP202609") {
   phoneType.required = false;
   phoneType.value = "";
 }
+
+    // スマホ・パソコン勉強会だけ申込内容を表示
+    const applicationTypeArea = document.getElementById("applicationTypeArea");
+    const applicationType = document.getElementById("applicationType");
+
+    if (["SP202609", "PC202609"].includes(courseId)) {
+      applicationTypeArea.style.display = "block";
+      applicationType.required = true;
+    } else {
+      applicationTypeArea.style.display = "none";
+      applicationType.required = false;
+      applicationType.value = "";
+    }
 
         document.getElementById(
           "courseIdInput"
